@@ -1,5 +1,4 @@
 const {
-  admin,
   firebase
  } = require('../config/firebase');
 const { getFirestore, collection, getDocs, query, where } = require('firebase/firestore');

@@ -11,6 +11,7 @@ router.post('/v1/logout', firebaseAuthController.logoutUser);
 router.post('/v1/reset-password', firebaseAuthController.resetPassword);
 
 router.post('/v1/createFavorite', checkIfAuthenticated, userController.createFavorite);
+router.post('/v1/getFavorite', userController.getFavorite);
 router.post('/v1/deleteFavorite', checkIfAuthenticated, userController.deleteFavorite);
 router.post('/v1/getUserByEmail', checkIfAuthenticated, userController.getUserByEmail);
 
