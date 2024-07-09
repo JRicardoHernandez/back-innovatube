@@ -22,14 +22,6 @@ class UserController {
         const db = admin.firestore();
         try {
             const email = req.body.email;
-            // console.log(email);
-            // const users = await db.collection("users").where('email', '==', email).get();
-            // let usr=[];
-            // if (users.docs.length > 0) {
-            //     for (const user of users.docs) {
-            //      usr.push(user.data())
-            // }}
-            // res.status(200).send(usr);
             const db = getFirestore(firebase);
             const _userCol = collection(db, 'users');
             const _q = query(_userCol, where("email", "==", email));
