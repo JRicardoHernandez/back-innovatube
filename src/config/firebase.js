@@ -3,7 +3,7 @@ require("dotenv").config();
 const firebase = require("firebase/app");
 // Iniciar Firebase SDK ADMIN
 const admin = require('firebase-admin');
-const serviceAccount = require("../FirebaseService.json");
+const serviceAccount = require("../firebaseService.json");
 
 // Configuracion
 const { 

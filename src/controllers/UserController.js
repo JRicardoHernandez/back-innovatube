@@ -32,6 +32,32 @@ class UserController {
         }
     };
 
+    // Crear Favorito
+    createFavorite = async (req, res, next) => {
+        const db = admin.firestore();
+        try {
+            const favoriteJson = req.body;
+            const favoriteDb = db.collection('favorites');
+            const response = await favoriteDb.add(favoriteJson);
+            res.status(200).send(response);
+        } catch (error) {
+          res.status(400).send(error.message);
+        }
+    };
+    
+    // Eliminar favorito
+    deleteFavorite = async (req, res, next) => {
+        const db = admin.firestore();
+        try {
+            const favoriteJson = req.body;
+            const favoriteDb = db.collection('favorites');
+            const response = await favoriteDb.doc(favoriteDb._id).delete();
+            res.status(200).send(response);
+        } catch (error) {
+          res.status(400).send(error.message);
+        }
+    };
+
 }
 
 module.exports = new UserController();

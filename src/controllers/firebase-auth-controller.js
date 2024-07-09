@@ -1,6 +1,8 @@
 const {
-  admin
+  admin,
+  firebase
  } = require('../config/firebase');
+const { getFirestore, collection, getDocs, query, where } = require('firebase/firestore');
  const { 
     getAuth, 
     createUserWithEmailAndPassword, 
@@ -33,17 +35,30 @@ class FirebaseAuthController {
       }
       
       let found = false;
-      const db = admin.firestore();
-      const users_byEmail = await db.collection("users").where('email', '==', email).get();
-      if (users_byEmail.docs.length == 0) {
-        found = true;
-      }
-      const users_byUser = await db.collection("users").where('user', '==', email).get();
-      if (users_byUser.docs.length == 0) {
+      const db = getFirestore(firebase);
+      // Validar el correo electrónico
+      const _mail_usersCol = collection(db, 'users');
+      const _mail_q = query(_mail_usersCol, where("email", "==", email));
+      const _mail_userSnapshot = await getDocs(_mail_q);
+      const _mail_userList = _mail_userSnapshot.docs.map(doc => doc.data());
+      if (_mail_userList.length == 0) {
         found = true;
       } else {
-        let data = users_byUser.docs[0].data();
+        let data = _mail_userList[0];
         email = data.email;
+      }
+      // Validar el usuario
+      if (found) {
+        const _user_usersCol = collection(db, 'users');
+        const _user_q = query(_user_usersCol, where("user", "==", email));
+        const _user_userSnapshot = await getDocs(_user_q);
+        const _user_userList = _user_userSnapshot.docs.map(doc => doc.data());
+        if (_user_userList.length == 0) {
+          found = true;
+        } else {
+          let data = _user_userList[0];
+          email = data.email;
+        }
       }
       
       if (!found) {
@@ -80,14 +95,21 @@ class FirebaseAuthController {
           password: _error_password_required,
         });
       }
-      
-      const db = admin.firestore();
-      const users_byEmail = await db.collection("users").where('email', '==', email).get();
-      if (users_byEmail.docs.length > 0) {
+      // Validar el correo electrónico
+      const db = getFirestore(firebase);
+      const _mail_usersCol = collection(db, 'users');
+      const _mail_q = query(_mail_usersCol, where("email", "==", email));
+      const _mail_userSnapshot = await getDocs(_mail_q);
+      const _mail_userList = _mail_userSnapshot.docs.map(doc => doc.data());
+      if (_mail_userList.length > 0) {
         return res.status(400).json({error: "El correo electrónico YA EXISTE"});
       }
-      const users_byUser = await db.collection("users").where('user', '==', req.body.user).get();
-      if (users_byUser.docs.length > 0) {
+      // Validar el usuario
+      const _user_usersCol = collection(db, 'users');
+      const _user_q = query(_user_usersCol, where("user", "==", email));
+      const _user_userSnapshot = await getDocs(_user_q);
+      const _user_userList = _user_userSnapshot.docs.map(doc => doc.data());
+      if (_user_userList.length > 0) {
         return res.status(400).json({error: "El usuario YA EXISTE"});
       }
 
