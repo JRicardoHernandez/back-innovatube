@@ -1,5 +1,5 @@
-const {RecaptchaEnterpriseServiceClient} = require('@google-cloud/recaptcha-enterprise');
-request = require('request'),
+
+request = require('request');
 
 /**
   * Crea una evaluación para analizar el riesgo de una acción de la IU.
@@ -12,24 +12,36 @@ request = require('request'),
  class Captcha {
 
     createAssessment = async (req, res, next) => {
-            /* Browse generates the google-recapcha-response key on form submit.
-            if its blank or null means user has not selected,
-            the captcha then blow error loop occurs.*/
-            if(req.body['recaptcha'] === undefined || req.body['recaptcha'] === '' || req.body['recaptcha'] === null) {
-                return res.json({"responseCode" : 1,"responseDesc" : "Validate captcha first"});
+        let token = req.body.recaptcha;
+        const secretkey = "6LeJNAwqAAAAAAMBTK3Tcyqidc5777YTMXthA3Cg";
+        
+        //token validation url is URL: https://www.google.com/recaptcha/api/siteverify 
+        // METHOD used is: POST
+        
+        const url =  `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${token}&remoteip=${req.connection.remoteAddress}`
+        
+        //note that remoteip is the users ip address and it is optional
+        // in node req.connection.remoteAddress gives the users ip address
+        
+        if(token === null || token === undefined){
+            res.status(201).send({success: false, message: "Token is empty or invalid"})
+            return console.log("token empty");
+        }
+        
+        request(url, function(err, response, body){
+            //the body is the data that contains success message
+            body = JSON.parse(body);
+            
+            //check if the validation failed
+            if(body.success !== undefined && !data.success){
+                res.status(400).send({success: false, 'message': "recaptcha failed"});
+                return console.log("failed");
             }
             
-            let secretKey = "6Leb4gsqAAAAALccRM86Qy0frmwTydWdF_qYnTX3";
-            let verificationUrl = "https://www.google.com/recaptcha/api/siteverify?secret=" + secretKey + "&response=" + req.body['recaptcha'] + "&remoteip=" + req.connection.remoteAddress;
-            // Google will respond with success or error scenario on url request sent.
-            request(verificationUrl,function(error,response,body) {
-            body = JSON.parse(body);
-            // Success will be true or false depending upon captcha validation.
-            if(body.success !== undefined && !body.success) {
-                return res.json({"responseCode" : 1,"responseDesc" : "Captcha verification has Failed. Try again."});
-            }
-            return res.json({"responseCode" : 0,"responseDesc" : "Captcha validated succesfully!"});
-        });
+            //if passed response success message to client
+            res.status(200).send({"success": true, 'message': "recaptcha passed"});
+            
+        })
     }
 
 }
