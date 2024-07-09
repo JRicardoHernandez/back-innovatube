@@ -30,12 +30,12 @@ router.post('/v1/reCaptcha',async function(req,res){
         const re = await request(options);
         console.log(re.body.success);
         if (!JSON.parse(re.body)['success']) {
-           return res.send({ response: "Failed" });
+           return res.status(400).json({"responseCode" : 1,"responseDesc" : "Captcha verification has Failed. Try again."});
         }
-        return res.send({ response: "Successful" });
-        } catch (error) {
-           return res.send({ response: "Failed" });
-        }
+        return res.status(200).json({"responseCode" : 0,"responseDesc" : "Captcha validated succesfully!"});
+    } catch (error) {
+        return res.status(400).json({"responseCode" : 1,"responseDesc" : "Captcha verification has Failed. Try again."});
+    }
 });
 
 module.exports = router;
