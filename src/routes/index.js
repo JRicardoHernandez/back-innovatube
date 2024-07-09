@@ -19,26 +19,23 @@ router.post('/v1/getFavorite', checkIfAuthenticated, userController.getFavorite)
 router.post('/v1/deleteFavorite', checkIfAuthenticated, userController.deleteFavorite);
 router.post('/v1/getUserByEmail', checkIfAuthenticated, userController.getUserByEmail);
 
-router.post('/v1/reCaptcha',function(req,res){
-    /* Browse generates the google-recapcha-response key on form submit.
-    if its blank or null means user has not selected,
-    the captcha then blow error loop occurs.*/
-    if(req.body['recaptcha'] === undefined || req.body['recaptcha'] === '' || req.body['recaptcha'] === null) {
-    return res.status(400).json({"responseCode" : 1,"responseDesc" : "Validate captcha first"});
+router.post('/v1/reCaptcha',async function(req,res){
+    const response_key = req.body["recaptcha"];
+    const secret_key = "6LeJNAwqAAAAAAMBTK3Tcyqidc5777YTMXthA3Cg";
+    const options = {
+        url: `https://www.google.com/recaptcha/api/siteverify?secret=${secret_key}&response=${response_key}`,
+        headers: { "Content-Type": "application/x-www-form-urlencoded", 'json': true }
     }
-     
-    let secretKey = "6Leb4gsqAAAAALccRM86Qy0frmwTydWdF_qYnTX3"; // Put your secret key here.
-    let verificationUrl = "https://www.google.com/recaptcha/api/siteverify?secret=" + secretKey + "&response=" + req.body['recaptcha'] + "&remoteip=" + req.socket.remoteAddress;
-    // Google will respond with success or error scenario on url request sent.
-    // console.log(req.socket, req.ip, verificationUrl);
-    request(verificationUrl,function(error,response,body) {
-        body = JSON.parse(body);
-        // Success will be true or false depending upon captcha validation.
-        if(body.success !== undefined && !body.success) {
-        return res.status(400).json({"responseCode" : 1,"responseDesc" : "Captcha verification has Failed. Try again."});
+    try {
+        const re = await request(options);
+        console.log(re.body.success);
+        if (!JSON.parse(re.body)['success']) {
+           return res.send({ response: "Failed" });
         }
-        res.status(400).json({"responseCode" : 0,"responseDesc" : "Captcha validated succesfully!"});
-    });
+        return res.send({ response: "Successful" });
+        } catch (error) {
+           return res.send({ response: "Failed" });
+        }
 });
 
 module.exports = router;
