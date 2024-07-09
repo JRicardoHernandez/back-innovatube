@@ -22,13 +22,27 @@ class UserController {
         const db = admin.firestore();
         try {
             const email = req.body.email;
-            const users = await db.collection("users").where('email', '==', email).get();
-            let usr=[];
-            if (users.docs.length > 0) {
-                for (const user of users.docs) {
-                 usr.push(user.data())
-            }}
-            res.status(200).send(usr);
+            // console.log(email);
+            // const users = await db.collection("users").where('email', '==', email).get();
+            // let usr=[];
+            // if (users.docs.length > 0) {
+            //     for (const user of users.docs) {
+            //      usr.push(user.data())
+            // }}
+            // res.status(200).send(usr);
+            const db = getFirestore(firebase);
+            const _userCol = collection(db, 'users');
+            const _q = query(_userCol, where("email", "==", email));
+            const _userSnapshot = await getDocs(_q);
+            const _userList = _userSnapshot.docs.map(doc => {
+                return { ...doc.data(), _id: doc.id };
+            });
+            if (_userList.length > 0) {
+                let data = _userList[0];
+                res.status(201).send(data);
+            } else {
+                res.status(400).send({message: "No se encontró"});
+            }
         } catch (error) {
           res.status(400).send(error.message);
         }
@@ -39,7 +53,7 @@ class UserController {
         try {
             const db = getFirestore(firebase);
             const docRef = await addDoc(collection(db, "favorites"), req.body);
-            res.status(200).send(docRef.id);
+            res.status(201).send({_id: docRef.id});
         } catch (error) {
           res.status(400).send(error.message);
         }
@@ -53,11 +67,11 @@ class UserController {
             const _q = query(_favoriteCol, where("_id_video", "==", req.body._id));
             const _favoriteSnapshot = await getDocs(_q);
             const _favoriteList = _favoriteSnapshot.docs.map(doc => {
-                return { ...doc.data(), id: doc.id };
+                return { ...doc.data(), _id: doc.id };
             });
             if (_favoriteList.length > 0) {
                 let data = _favoriteList[0];
-                res.status(200).send(data);
+                res.status(201).send(data);
             } else {
                 res.status(400).send({message: "No se encontró"});
             }

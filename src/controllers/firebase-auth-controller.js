@@ -33,7 +33,7 @@ class FirebaseAuthController {
           });
       }
       
-      let found = false;
+      let notfound = false;
       const db = getFirestore(firebase);
       // Validar el correo electrónico
       const _mail_usersCol = collection(db, 'users');
@@ -41,26 +41,26 @@ class FirebaseAuthController {
       const _mail_userSnapshot = await getDocs(_mail_q);
       const _mail_userList = _mail_userSnapshot.docs.map(doc => doc.data());
       if (_mail_userList.length == 0) {
-        found = true;
+        notfound = true;
       } else {
         let data = _mail_userList[0];
         email = data.email;
       }
       // Validar el usuario
-      if (found) {
+      if (notfound) {
         const _user_usersCol = collection(db, 'users');
         const _user_q = query(_user_usersCol, where("user", "==", email));
         const _user_userSnapshot = await getDocs(_user_q);
         const _user_userList = _user_userSnapshot.docs.map(doc => doc.data());
         if (_user_userList.length == 0) {
-          found = true;
+          notfound = true;
         } else {
           let data = _user_userList[0];
           email = data.email;
         }
       }
       
-      if (!found) {
+      if (notfound) {
         return res.status(400).json({error: "El usuario no existe"});
       }
 

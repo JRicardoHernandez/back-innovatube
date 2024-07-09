@@ -24,18 +24,15 @@ request = require('request');
         // in node req.connection.remoteAddress gives the users ip address
         
         if(token === null || token === undefined){
-            res.status(201).send({success: false, message: "Token is empty or invalid"})
-            return console.log("token empty");
+            return res.status(201).send({success: false, message: "Token is empty or invalid"})
         }
         
         request(url, function(err, response, body){
             //the body is the data that contains success message
             body = JSON.parse(body);
-            console.log(body.success);
             //check if the validation failed
             if(body.success !== undefined && !body.success){
-                res.status(400).send({success: false, 'message': "recaptcha failed"});
-                return console.log("failed");
+                return res.status(400).send({success: false, 'message': "recaptcha failed"});
             }
             
             //if passed response success message to client
